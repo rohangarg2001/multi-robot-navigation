@@ -73,3 +73,8 @@ class MultiRobotEKF:
 
     def get_state(self):
         return self.state.reshape(self.num_robots, 3)  # Return [x, y, theta] for each robot
+
+
+
+if __name__ == '__main__':
+    mu = MultiRobotEKF()
