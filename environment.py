@@ -28,12 +28,17 @@ class Environment:
             robot.update(v, w, dt)
 
     def get_states(self):
-        return [(robot.x, robot.y, robot.theta) for robot in self.robots]
+        """
+        returns a (3N,1) array 
+        """
+        states = np.array([np.array([robot.x, robot.y, robot.theta]) for robot in self.robots])
+        return states.flatten().reshape(-1,1)
     
     def get_observations(self):
-        """returns the observation vector of the entire n-robot system
+        """returns the observation vector of the entire n-robot system. The observation vector is a (3n,1) vector.
+        The layout is that obs = [[dist(i,k) for all k != i], [heading angles]]  (ith robot observation)
         """
-        observation = np.zeros((self.n_robots, self.n_robots))
+        observation = np.zeros((self.n_robots, self.n_robots - 1))
         for i in range(self.n_robots):
             # we are calculating the observation matrix {z_{i}}
             z_i = []
@@ -41,10 +46,12 @@ class Environment:
                 if(i!=j):
                     noise = np.random.randn() * self.std_dev_uwb 
                     z_i.append(np.linalg.norm((self.robots[j].x - self.robots[i].x, self.robots[j].y - self.robots[i].y)) + noise)
-            compass_reading = self.robots[i].theta + np.random.randn() * self.std_compass
-            z_i.append(compass_reading)
             observation[i,:] = z_i
-        return observation
+        observation = list(observation.flatten())
+        for j in range(self.n_robots):
+            compass_reading = self.robots[i].theta + np.random.randn() * self.std_compass
+            observation.append(compass_reading)
+        return np.array(observation)
 
 def visualize_robots(states):
     plt.figure()
@@ -63,11 +70,15 @@ def visualize_robots(states):
 if __name__ == "__main__":
     env = Environment(n_robots=5)
     actions = [(1.0, 0.1) for _ in range(5)]  # Example actions for each robot
+    print(actions)
     dt = 0.1  # Time step
     # visualize_robots(env.get_states())
-    for _ in range(3):  # Simulate 100 steps
-        env.step(actions, dt)
-        states = env.get_states()
-    visualize_robots(env.get_states())
+    # for _ in range(3):  # Simulate 100 steps
+    #     env.step(actions, dt)
+    #     states = env.get_states()
+    # visualize_robots(env.get_states())
+    print(np.shape(env.get_states()))
     print(env.get_observations())
-                       
+    print(env.get_observations().shape)
+    print(env.robots[-1].theta)
+    print(env.robots[-2].theta)
