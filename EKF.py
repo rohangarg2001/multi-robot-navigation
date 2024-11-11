@@ -19,6 +19,7 @@ class StateEstimator(Environment):
         self.R = self.Noise_covar_()                # [N^2, N^2]
         self.Q = self.sigma_dyn*np.eye(3*self.n_robots)
         self.P_t_1 = np.eye(3*self.n_robots)        # [3N, 3N]
+        self.s_t_1 = np.zeros(3*self.n_robots,1)        # [3N, 1]
 
     def noise_covar_(self):
         R = np.eye(3*self.n_robots)
@@ -155,7 +156,7 @@ class StateEstimator(Environment):
         '''
 
         s_pred_t = self.s_t_1 + B_t @ self.prev_actions     # Dynamics Update
-        P_pred_t = F_t @ self.P_t_1 @ F_t.T + self.Q\
+        P_pred_t = F_t @ self.P_t_1 @ F_t.T + self.Q 
         
         return s_pred_t, P_pred_t
 
