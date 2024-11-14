@@ -10,26 +10,42 @@ class Robot:
     def normalize_angle(self, angle):
         return np.arctan2(np.sin(angle), np.cos(angle))
     
-    def update(self, v, w, dt):
-        self.x += v * np.cos(self.theta) * dt + 0.01*np.random.normal(0, 0.01)
-        self.y += v * np.sin(self.theta) * dt + 0.01*np.random.normal(0, 0.01)
-        self.theta += w * dt + 0.01*np.random.normal(0, 0.01)
+    def update(self, v, w, std_uwb, std_compass, dt):
+        """
+        SHOULD WE BE ADDING THIS NOISE HERE??
+        """
+        # self.x += v * np.cos(self.theta) * dt + std_uwb*np.random.normal(0, 1)
+        # self.y += v * np.sin(self.theta) * dt + std_uwb*np.random.normal(0, 1)
+        # self.theta += w * dt + std_compass*np.random.normal(0, 1)
+        self.x += v * np.cos(self.theta) * dt 
+        self.y += v * np.sin(self.theta) * dt 
+        self.theta += w * dt 
         # self.theta = self.normalize_angle(self.theta)
 
 class Environment:
     def __init__(self, n_robots):
         self.n_robots = n_robots
-        self.deltaT = 0.1                          # time steps
-        self.robots = [Robot(np.random.uniform(3, 10), np.random.uniform(1, 3), np.random.uniform(-np.pi, np.pi)) for _ in range(n_robots)]
-        self.std_dev_uwb = 0.04                   ## STD for the UWB sensor
-        self.std_compass = 0.01                    ## STD for the compass
-        self.sigma_dyn = 0.01                       ## STD for the dynamics
+        self.deltaT = 0.05                          # time steps
+        self.robots = [Robot(np.random.uniform(3, 10), np.random.uniform(1, 3), np.random.uniform(-np.pi/4, np.pi/4)) for _ in range(n_robots)]
+        self.std_dev_uwb = 0.004                   ## STD for the UWB sensor
+        self.std_compass = 0.001                    ## STD for the compass
+        self.sigma_dyn = 0.001                       ## STD for the dynamics
+        # self.std_dev_uwb = 1e-5                  ## STD for the UWB sensor
+        # self.std_compass = 1e-5                    ## STD for the compass
+        # self.sigma_dyn = 1e-5                   ## STD for the dynamics
+
         self.reachd_goal_ = False
 
     def step(self, actions):
         for robot, (v, w) in zip(self.robots, actions):
-            robot.update(v, w, self.deltaT)
+            robot.update(v, w, self.std_dev_uwb, self.std_compass,self.deltaT)
 
+    def set_states(self, input_states):
+        for i in range(len(input_states)//3):
+            self.robots[i].x = input_states[3*i]
+            self.robots[i].y = input_states[3*i + 1]
+            self.robots[i].theta = input_states[3*i + 2]
+        
     def get_states(self):
         """
         returns a (3N,1) array 
@@ -38,7 +54,7 @@ class Environment:
         return states.flatten().reshape(-1,1)
     
     def get_observations(self):
-        """returns the observation vector of the entire n-robot system. The observation vector is a (3n,1) vector.
+        """returns the observation vector of the entire n-robot system. The observation vector is a (n2,1) vector.
         The layout is that obs = [[dist(i,k) for all k != i], [heading angles]]  (ith robot observation)
         """
         observation = np.zeros((self.n_robots, self.n_robots - 1))

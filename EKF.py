@@ -4,21 +4,21 @@ import math
 from environment import Environment, Robot
 
 class StateEstimator():
-    def __init__(self, Env:Environment):
+    def __init__(self, EKF_env:Environment):
         '''
         Use following vales from environment file
         '''
-        self.n_robots = Env.n_robots               # N : Number of rovers
-        self.std_dev_uwb = Env.n_robots            # UWB covariance
-        self.std_compass = Env.std_compass         # Compass Covariance
-        self.sigma_dyn = Env.sigma_dyn             # Dynamics Covariance
-        self.deltaT = Env.deltaT
-
+        self.n_robots = EKF_env.n_robots               # N : Number of rovers
+        self.std_dev_uwb = EKF_env.n_robots            # UWB covariance
+        self.std_compass = EKF_env.std_compass         # Compass Covariance
+        self.sigma_dyn = EKF_env.sigma_dyn             # Dynamics Covariance
+        self.deltaT = EKF_env.deltaT
+        self.EKF_env = EKF_env
         self.I = np.eye(3*self.n_robots)           # [3N, 3N]
         self.R = self.noise_covar_()               # [N^2, N^2]
         self.Q = self.sigma_dyn*np.eye(3*self.n_robots)
-        self.P_t_1 = 10*np.eye(3*self.n_robots)        # [3N, 3N] t=0
-        self.s_t_1 = Env.get_states()               # [3N, 1] t=0
+        self.P_t_1 = 0.1*np.eye(3*self.n_robots)        # [3N, 3N] t=0
+        self.s_t_1 = EKF_env.get_states()               # [3N, 1] t=0
 
     def noise_covar_(self):
         R = np.eye(self.n_robots*self.n_robots)
@@ -38,23 +38,22 @@ class StateEstimator():
         Compute the state transition Jacobian F_t for n unicyclic robots.
         """
         F_t = np.zeros((3 * self.n_robots, 3 * self.n_robots))  # (3n x 3n) matrix
-
         for i in range(self.n_robots):
             idx = 3 * i
             
             # Populate the 3x3 block for the i-th robot
             F_t[idx, idx] = 1  # ∂x / ∂x
             F_t[idx, idx + 1] = 0  # ∂x / ∂y
-            F_t[idx, idx + 2] = -self.prev_actions[2*i] * np.sin(self.s_t_1[idx+2]) * self.deltaT  # ∂x / ∂theta
-
+            # F_t[idx, idx + 2] = -self.prev_actions[2*i] * np.sin(self.s_t_1[idx+2]) * self.deltaT  # ∂x / ∂theta
+            F_t[idx, idx + 2] = 0
             F_t[idx + 1, idx] = 0  # ∂y / ∂x
             F_t[idx + 1, idx + 1] = 1  # ∂y / ∂y
-            F_t[idx + 1, idx + 2] = self.prev_actions[2*i] * np.cos(self.s_t_1[idx+2]) * self.deltaT  # ∂y / ∂theta
-
+            # F_t[idx + 1, idx + 2] = self.prev_actions[2*i] * np.cos(self.s_t_1[idx+2]) * self.deltaT  # ∂y / ∂theta
+            F_t[idx + 1, idx + 2] = 0
             F_t[idx + 2, idx] = 0  # ∂theta / ∂x
             F_t[idx + 2, idx + 1] = 0  # ∂theta / ∂y
-            F_t[idx + 2, idx + 2] = 1  # ∂theta / ∂theta
-
+            # F_t[idx + 2, idx + 2] = 1  # ∂theta / ∂theta
+            F_t[idx + 2, idx + 2] = 0
         return F_t
 
     def compute_B_t(self):
@@ -98,8 +97,7 @@ class StateEstimator():
         h_dist = np.array(h_dist)
         
         for i in range(self.n_robots):
-            h_heading[i] = s_pred_t[3*i+2]
-        
+            h_heading[i] = s_pred_t[3*i+2]       
 
         h = np.vstack((h_dist, h_heading))            
         return h
