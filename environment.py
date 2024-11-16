@@ -10,25 +10,25 @@ class Robot:
     def normalize_angle(self, angle):
         return np.arctan2(np.sin(angle), np.cos(angle))
     
-    def update(self, v, w, dt):
-        self.x += v * np.cos(self.theta) * dt + 0.01*np.random.normal(0, 0.01)
-        self.y += v * np.sin(self.theta) * dt + 0.01*np.random.normal(0, 0.01)
-        self.theta += w * dt + 0.01*np.random.normal(0, 0.01)
+    def update(self, v, w, dt, sigma_model):
+        self.x += v * np.cos(self.theta) * dt # Sgould we add noise in true dynamics in envirpn
+        self.y += v * np.sin(self.theta) * dt 
+        self.theta += w * dt 
         # self.theta = self.normalize_angle(self.theta)
 
 class Environment:
     def __init__(self, n_robots):
         self.n_robots = n_robots
         self.deltaT = 0.1                          # time steps
-        self.robots = [Robot(np.random.uniform(3, 10), np.random.uniform(1, 3), np.random.uniform(-np.pi, np.pi)) for _ in range(n_robots)]
-        self.std_dev_uwb = 0.04                   ## STD for the UWB sensor
-        self.std_compass = 0.01                    ## STD for the compass
-        self.sigma_dyn = 0.01                       ## STD for the dynamics
+        self.robots = [Robot(np.random.uniform(3, 10), np.random.uniform(1, 3), np.random.uniform(0, 32*np.pi/16)) for _ in range(n_robots)]
+        self.std_dev_uwb = 0.1                  ## STD for the UWB sensor
+        self.std_compass = 0.5                    ## STD for the compass
+        self.sigma_dyn = 0.05                       ## STD for the dynamics
         self.reachd_goal_ = False
 
     def step(self, actions):
         for robot, (v, w) in zip(self.robots, actions):
-            robot.update(v, w, self.deltaT)
+            robot.update(v, w, self.deltaT, self.sigma_dyn)
 
     def get_states(self):
         """
@@ -47,12 +47,12 @@ class Environment:
             z_i = []
             for j in range(self.n_robots):
                 if(i!=j):
-                    noise = np.random.normal(0,1) *self.std_dev_uwb 
+                    noise = np.random.normal(0,self.std_dev_uwb )
                     z_i.append(np.linalg.norm((self.robots[j].x - self.robots[i].x, self.robots[j].y - self.robots[i].y)) + noise)
             observation[i,:] = z_i
         observation = list(observation.flatten())
         for j in range(self.n_robots):
-            compass_reading = self.robots[i].theta + np.random.normal(0,1) * self.std_compass
+            compass_reading = self.robots[j].theta + np.random.normal(0,self.std_compass) 
             observation.append(compass_reading)
         return np.array(observation)
 

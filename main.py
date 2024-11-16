@@ -43,11 +43,11 @@ def main():
     Env_readings = []
     Pred_readings = []
     EKF_readings = []
-    while i<100:
+    while i<1000:
         
         s_t_1 = EKF.s_t_1    
         # prev_action = Controller.prev_actions() 
-        prev_action = np.array([(1.0, 0.1), (1.0, 0.1),(1.0, 0.1) ])
+        prev_action = np.array([(0.10, 0.1), (0.10, 0.1),(0.10, 0.1) ])
         # prev_action = np.array([(1.0, 0.1), (1.0, 0.1)])
         Env.step(prev_action)
         Env_readings.append(Env.get_states())
@@ -58,7 +58,7 @@ def main():
         EKF_readings.append(cur_es_state)
 
         # action_next = Controller.decision(cur_es_state)
-        action_next = np.array([(1.0, 0.1), (1.0, 0.1),(1.0, 0.1)])
+        action_next = np.array([(0.10, 0.1), (0.10, 0.1),(0.10, 0.1)])
         # action_next = np.array([(1.0, 0.1), (1.0, 0.1)])
         i+=1
     
