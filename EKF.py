@@ -16,8 +16,8 @@ class StateEstimator():
 
         self.I = np.eye(3*self.n_robots)           # [3N, 3N]
         self.R = self.noise_covar_()               # [N^2, N^2]
-        self.Q = (1e-06)*self.sigma_dyn*np.eye(3*self.n_robots)
-        self.P_t_1 = (1e-06)*np.eye(3*self.n_robots)        # [3N, 3N] t=0
+        self.Q = (1e-02)*(self.sigma_dyn**2) * np.eye(3*self.n_robots)
+        self.P_t_1 = (1e-04)*np.eye(3*self.n_robots)        # [3N, 3N] t=0
         self.s_t_1 = Env.get_states()               # [3N, 1] t=0
 
     def noise_covar_(self):
@@ -148,7 +148,7 @@ class StateEstimator():
         H_t = self.compute_H_t(s_pred_t)
         self.update(s_pred_t, P_pred_t, h_t_s, H_t)
 
-        return self.s_t, s_pred_t
+        return self.s_t, s_pred_t, self.P_t
     
     def predict(self, B_t, F_t):
         '''
