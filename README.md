@@ -71,17 +71,12 @@ To modify the number of robots or their goal positions:
 
 ## **Contact**
 
-For questions, issues, or feedback, please contact:
+For questions, issues, or feedback, please reach out to the following:
 
-- **Name**: [Alexandre Carlhammar]
-- **Email**: [acarlham@stanford.edu]
+- **Alexandre Carlhammar**  
+  Email: [acarlham@stanford.edu]
 
-- 
-- **Name**: [Arpit Dwivedi]
-- **Email**: [dwivedi7@stanford.edu]
-
-- 
-- **Name**: [Rohan Garg]
-- **Email**: [rohang73@stanford.edu]
+- **Arpit Dwivedi**  
+  Email: [dwivedi7@stanford.edu]
 
 ---
