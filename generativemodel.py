@@ -17,21 +17,22 @@ class Robot:
         # self.theta = self.normalize_angle(self.theta)
 
 class Environment:
-    def __init__(self, n_robots,state):
+    def __init__(self, n_robots, state):
         self.n_robots = n_robots
-        self.deltaT = 0.1                          # time steps
+        self.deltaT = 0.1  # time steps
         self.robots = []
+
         # Initialize robots using the given state vector `s`
         for i in range(self.n_robots):
             # Each robot's state is given by 3 consecutive values in the vector `s`
             x = state[3*i]      # x position of robot i
             y = state[3*i + 1]  # y position of robot i
             theta = state[3*i + 2]  # orientation (theta) of robot i
-            self.robots.append(Robot(x, y, theta))  
+            self.robots.append(Robot(x, y, theta))
 
-        self.std_dev_uwb = 0.01  # STD for the UWB sensor                
-        self.std_compass = 0.05                    ## STD for the compass
-        self.sigma_dyn = 0.05                       ## STD for the dynamics
+        self.std_dev_uwb = 0.01  # STD for the UWB sensor
+        self.std_compass = 0.05  # STD for the compass
+        self.sigma_dyn = 0.05    # STD for the dynamics
         self.reachd_goal_ = False
 
     def step(self, actions):
@@ -64,35 +65,4 @@ class Environment:
             observation.append(compass_reading)
         return np.array(observation)
 
-def visualize_robots(states):
-    '''
-    Input : [N,3]
-    '''
-    plt.figure()
-    for x, y, theta in states:
-        plt.plot(x, y, 'bo')
-        plt.arrow(x, y, 0.5 * np.cos(theta), 0.5 * np.sin(theta), head_width=0.2, head_length=0.2, fc='blue', ec='blue')
-    plt.xlim(0, 10)
-    plt.ylim(0, 10)
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.title('Robot Positions')
-    plt.grid()
-    plt.show()
 
-# Example usage
-if __name__ == "__main__":
-    env = Environment(n_robots=2)
-    actions = [(1.0, 0.1) for _ in range(env.n_robots)]  # Example actions for each robot
-    print(actions)
-    dt = 0.1  # Time step
-    # visualize_robots(env.get_states())
-    # for _ in range(3):  # Simulate 100 steps
-    #     env.step(actions, dt)
-    #     states = env.get_states()
-    # visualize_robots(env.get_states())
-    print(np.shape(env.get_states()))
-    print(env.get_observations())
-    print(env.get_observations().shape)
-    print(env.robots[-1].theta)
-    print(env.robots[-2].theta)

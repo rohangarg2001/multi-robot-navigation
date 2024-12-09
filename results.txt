@@ -1,0 +1,11 @@
+a 65
+o 50
+550 sim 
+1000 steps
+d=12
+final.png
+
+
+
+
+
