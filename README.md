@@ -79,4 +79,7 @@ For questions, issues, or feedback, please reach out to the following:
 - **Arpit Dwivedi**  
   Email: [dwivedi7@stanford.edu]
 
+- **Rohan Garg**  
+  Email: [rohang73@stanford.edu]
+
 ---
